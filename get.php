@@ -4,103 +4,51 @@
 //recupere la locatisation de tous
 
 function getLocation(){
-
-
+    
     global $database;
     $data=null;
     $myquery=$database->query("SELECT *from geolocation");
 
     $count=$myquery->rowCount();
-
-
     if($count==0):
-
-           $data=json_encode(["message"=>"aucune localisation"]);
-          
-
+        $data=json_encode(["message"=>"aucune localisation"]);
     else:
-
-
-
-     while($query=$myquery->fetchAll(PDO::FETCH_ASSOC)){
-
-          $data=json_encode($query);
-
-     }
-
-
-
-
+         while($query=$myquery->fetchAll(PDO::FETCH_ASSOC)){
+              $data=json_encode($query);
+         }
     endif;
-    
-     
-
-     return $data;
-    
-
-
+    return $data;
 }
 //contcion de localisation
 
 function getCurrentLocation($email){
 
- global $database;
-
- $data=null;
-
- $myquery=$database->prepare("SELECT *from  geolocation where email=?");
-
- $myquery->execute(array($email));
-
- $result=$myquery->fetch(PDO::FETCH_ASSOC);
-    
- $count=$myquery->rowCount();
-
- if($count==0 or $count!=1):
-
-          
-     return   json_encode($result=["message"=>"erreur"]);
-
- else:
-    
-       return json_encode($result);
-
-         
- 
- endif;
-
-
-
+     global $database;
+     $data=null;
+     $myquery=$database->prepare("SELECT *from  geolocation where email=?");
+     $myquery->execute(array($email));
+     $result=$myquery->fetch(PDO::FETCH_ASSOC);
+     $count=$myquery->rowCount();
+     if($count==0 or $count!=1):
+         return   json_encode($result=["message"=>"erreur"]);
+     else:
+         return json_encode($result);
+     endif;
 }
  //fonction d'authentification
 
-function getUser($email,$password){
-
-
+function getUser($email=null,$password=null){
+    
     global  $database;
-
     $myquery=$database->prepare("SELECT *from user where email=? and mdp=?");
-
     $myquery->execute(array($email,$password));
-
     $result=$myquery->fetch(PDO::FETCH_ASSOC);
-    
     $count=$myquery->rowCount();
-
     if($count==0 or $count!=1):
-
-             
          return json_encode($result=["message"=>"Aucun utilisateur avec ce mail"]);
-
     else:
-       
           return json_encode($result);
-
-            
-    
     endif;
-
-
 }
 
 
@@ -108,24 +56,14 @@ function getUser($email,$password){
 
 function getAllUser(){
 
-
+    
   global $database;
-
   $mydata=null;
-
   $queryString=$database->query("SELECT *from user");
-  
   while($data=$queryString->fetchAll(PDO::FETCH_ASSOC)){
-  
       $mydata=json_encode($data);
-
-
   }
-
-
   return  ($mydata!="")?$mydata:json_encode($mydata=["message"=>"liste vide"]);
-      
-      
 
 }
 
@@ -135,18 +73,11 @@ function Suspect(){
 
 
       global $database;
-
       $mydata=null;
-
       $queryString=$database->query("SELECT Upper(user.nom) as nom ,Upper(user.prenom) as prenom,user.localisation,user.telephone,geolocation.* from user inner join geolocation where user.email=geolocation.email");
- 
       while($fetch=$queryString->fetchAll(PDO::FETCH_OBJ)):
-
              $mydata=json_encode($fetch);
-
       endwhile;
-
-
       return (strlen($mydata)!=0)?$mydata:json_encode($mydata=["message"=>" Aucun suspect"]);
 
 }
@@ -154,35 +85,22 @@ function Suspect(){
 
 //cette fonction permet de tracer un utilisateur;
 function Tracert($email){
-
-
-     global $database;
-
-     $mydata=null;
-
-     $queryString=$database->prepare("SELECT Upper(user.nom) as nom ,Upper(user.prenom) as  prenom ,user.localisation,user.telephone,geolocation.* from user inner join geolocation where user.email=geolocation.email and user.email=?");
-     
-     $queryString->execute(array(filter_var($email,FILTER_VALIDATE_EMAIL)));
     
+     global $database;
+     $mydata=null;
+     $queryString=$database->prepare("SELECT Upper(user.nom) as nom ,Upper(user.prenom) as  prenom ,user.localisation,user.telephone,geolocation.* from user inner join geolocation where user.email=geolocation.email and user.email=?");
+     $queryString->execute(array(filter_var($email,FILTER_VALIDATE_EMAIL)));
      $row=$queryString->rowCount();
-
      if($row==0):
-
-               $mydata=[
-
-                     "message"=>" Erreur lors de la recherche",
-               ];
-
+       $mydata=[
+             "message"=>" Erreur lors de la recherche",
+       ];
      else:
 
-               while($fetch=$queryString->fetchAll(PDO::FETCH_OBJ)):
-
-                    $mydata=$fetch;
-
-               endwhile;
+       while($fetch=$queryString->fetchAll(PDO::FETCH_OBJ)):
+            $mydata=$fetch;
+       endwhile;
     endif;
-
-
      return json_encode($mydata);
 
 }
@@ -190,36 +108,18 @@ function Tracert($email){
 
      function LatLng($localisation){
 
-
          global $database;
          $result=null;
          $queryString=$database->prepare("SELECT longitude,latitude from user where localisation=?");
          $queryString->execute(array($localisation));
          $count=$queryString->rowCount();
-
          if($count==0):
-
-             
                  $result=["message"=>"aucune localisation"];
-
-
          else:
-
-
-               
                while( $data=$queryString->fetchAll(PDO::FETCH_ASSOC)):
-
-
-                           $result=$data;
-               
+                   $result=$data;
                endwhile;
-
-
-
-
          endif;
-
-
           return json_encode($result);
 
 
